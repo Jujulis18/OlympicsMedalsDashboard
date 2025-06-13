@@ -1,0 +1,23 @@
+[
+  {
+    "country": "France",
+    "total": 35,
+    "female_athletes": 55,
+    "total_athletes": 120,
+    "last_gold": "2024-08-04"
+  },
+  {
+    "country": "USA",
+    "total": 90,
+    "female_athletes": 210,
+    "total_athletes": 410,
+    "last_gold": "2024-08-10"
+  },
+  {
+    "country": "Japan",
+    "total": 50,
+    "female_athletes": 80,
+    "total_athletes": 170,
+    "last_gold": "2024-08-07"
+  }
+]
