@@ -4,6 +4,8 @@ Bienvenue dans le projet de visualisation et d’analyse des médaillés des Jeu
 
 Ce dashboard interactif, construit avec Python, Streamlit et Plotly, permet d’explorer les performances des athlètes médaillés selon plusieurs dimensions : pays, disciplines, âge, genre, etc.
 
+Visualiser sur [Streamlit](https://olympicsmedalsdashboard-y3ubmd64tsaq76s39b8sfz.streamlit.app/)
+
 ---
 
 ## 📚 Documentation du projet
@@ -24,6 +26,10 @@ Pour mieux comprendre chaque composant du projet, voici les documents disponible
 
 - **Exemples de visualisations intégrées au dashboard**  
   On retrouve : histogrammes d’âge, pyramides des âges par sexe, cartes des médailles par pays, tops des disciplines, etc.
+
+![image](https://github.com/user-attachments/assets/4159caa3-9162-4af0-8fc1-16dba650f8be)
+
+
 
 
 ---
