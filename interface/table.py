@@ -1,28 +1,59 @@
 import plotly.express as px
 import streamlit as st
 import pandas as pd
+from scripts.dataset_slicer import OlympicDatasetSlicer
+import numpy as np
 
-def show_table_and_graphs(df, filters):
+def show_table(df, filters):
+
     # Appliquer les filtres
     if filters["pays"]:
-        df = df[df["country"].isin(filters["pays"])]
+        df = df[df["country_long"].isin(filters["pays"])]
 
-    df["last_gold"] = pd.to_datetime(df["last_gold"])
-    start_date, end_date = filters["date"]
-    df = df[(df["last_gold"] >= pd.to_datetime(start_date)) & (df["last_gold"] <= pd.to_datetime(end_date))]
-
-    # Affichage tableau
     st.subheader("Tableau des Médailles")
     st.dataframe(df)
 
-    # Histogramme total par pays
-    st.subheader("Histogramme des Médailles par Pays")
-    df_agg = df.groupby("country", as_index=False).agg({"total": "sum"})
-    fig_bar = px.bar(df_agg, x="country", y="total", color="country", title="Total de Médailles par Pays")
-    st.plotly_chart(fig_bar, use_container_width=True)
+def apply_filters(df, filters):
+    if filters["pays"]:
+        df = df[df["country_long"].isin(filters["pays"])]
+    if filters["sexe"]:
+        if filters["sexe"]=="Femme":
+            df = df[df["gender"]=="Female"]
+        if filters["sexe"]=="Homme":
+            df = df[df["gender"]=="Male"]
+    if filters["medaille"]:
+        if "Total" not in filters["medaille"]:
+            medaille_mapping = {"Or": 1, "Argent": 2, "Bronze": 3}
+            filtered_values = [medaille_mapping[m] for m in filters["medaille"] if m in medaille_mapping]
+            if filtered_values:
+                df = df[df["medal_code"].isin(filtered_values)]
+    return df
 
-    # Graphique temporel (médailles par jour)
-    st.subheader("Évolution Temporelle des Médailles")
-    df_time = df.groupby("last_gold", as_index=False).agg({"total": "sum"})
-    fig_line = px.line(df_time, x="last_gold", y="total", title="Nombre de Médailles au Fil du Temps")
-    st.plotly_chart(fig_line, use_container_width=True)
+def prepare_data(df):
+    slicer = OlympicDatasetSlicer(df)
+    slicer.prepare_olympic_data()
+    slicer.slice_by_gender_medals()
+    slicer.slice_youngest_medalists()
+    slicer.slice_oldest_medalists()
+    slicer.slice_multi_discipline_athletes()
+    return slicer
+
+def get_ranking(df, filters):
+    df_filtered = apply_filters(df, filters)
+    slicer = prepare_data(df_filtered)
+    return slicer.get_ranking(filters["pays"])
+
+def show_graphs(df, filters):
+    df_filtered = apply_filters(df, filters)
+    slicer = prepare_data(df_filtered)
+    slicer.display_graphs()
+
+def show_age(df, filters):
+    df_filtered = apply_filters(df, filters)
+    slicer = prepare_data(df_filtered)
+    slicer.display_age()
+
+def show_compare(df, filters):
+    df_filtered = apply_filters(df, filters)
+    slicer = prepare_data(df_filtered)
+    slicer.display_compare()

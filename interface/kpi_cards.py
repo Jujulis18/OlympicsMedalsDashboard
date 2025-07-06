@@ -2,43 +2,33 @@ import streamlit as st
 import pandas as pd
 import json
 from pathlib import Path
+import plotly.express as px
+from interface.table import get_ranking
 
-def load_medal_data():
-    data_path = Path(__file__).resolve().parent.parent / "data" / "medals_sample.json"
-    with open(data_path, "r") as f:
-        data = json.load(f)
-    return pd.DataFrame(data)
 
-def show_kpi_cards(filters):
-    df = load_medal_data()
-
-    # Filtrage pays
+def show_kpi_cards(df, filters):
     if filters["pays"]:
-        df = df[df["country"].isin(filters["pays"])]
+        df = df[df["country_long"].isin(filters["pays"])]
 
-    # Filtrage sexe (exemple simplifié)
-    if filters["sexe"] == "Femme":
-        df = df[df["female_athletes"] > 0]  # exemple basique
-    elif filters["sexe"] == "Homme":
-        # On suppose total_athletes - female_athletes = hommes
-        df = df[df["total_athletes"] - df["female_athletes"] > 0]
+    total_medals = len(df)
+    total_countries = df["country_long"].nunique()
+    female_ratio = ((df["gender"] == "Female").sum() / len(df))*100
+    male_ratio = 100 - female_ratio
+    
 
-    # Filtrage médaille (exemple : on ne garde que les lignes où total > 0)
-    if "Total" not in filters["medaille"]:
-        # Ici on n'a qu'une colonne total, on adapte pour or/argent/bronze si dispo
-        df = df[df["total"] > 0]
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if total_countries == 1:
+            rank = get_ranking(df, filters)
+            col1.metric("Ranking", rank)
+        else:
+            col1.metric("Nombre de pays sélectionnés", total_countries)
 
-    # Filtrage année (si on a une colonne date ou année, ici on fait simple)
-    # Exemple pas implémenté car nos données sont très basiques
+    with col2:
+        col2.metric("Total Médailles", total_medals)
 
-    # Calcul KPIs
-    total_medals = df["total"].sum()
-    total_countries = df["country"].nunique()
-    female_ratio = df["female_athletes"].sum() / df["total_athletes"].sum() * 100 if df["total_athletes"].sum() > 0 else 0
-    last_gold_date = df["last_gold"].max() if not df.empty else "N/A"
-
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("🏅 Total Médailles", total_medals)
-    col2.metric("🌍 Pays Participants", total_countries)
-    col3.metric("♀ % Femmes", f"{female_ratio:.1f}%")
-    col4.metric("⏱ Dernière Médaille d'Or", last_gold_date)
+    with col3:
+        col3.text("Ratio Femmes/Hommes")
+        fig = px.pie(names=['Femmes', 'Hommes'], values=[female_ratio, male_ratio])
+        fig.update_layout(height=100, margin=dict(t=0, b=0, l=0, r=0))  # Ajuster la hauteur et les marges
+        col3.plotly_chart(fig, use_container_width=True)
